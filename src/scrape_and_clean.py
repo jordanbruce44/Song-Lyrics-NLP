@@ -6,6 +6,7 @@ import requests
 import pandas as pd
 from typing import List
 import re
+from nltk.corpus import words
 
 # Set up Genius API with your token
 genius = lyricsgenius.Genius("your_genius_token", timeout=15)
@@ -28,9 +29,13 @@ def clean_lyrics(lyrics):
 
 def is_english(lyrics):
     # Simple heuristic: If the number of ASCII characters is below a certain threshold, consider it non-English
-    threshold = 0.9  # 90% of the characters should be ASCII characters
-    num_ascii_chars = sum(1 for char in lyrics if ord(char) < 128)
-    return (num_ascii_chars / len(lyrics)) > threshold
+     # Load list of English words
+    english_vocab = set(words.words())
+    words_in_lyrics = set(nltk.word_tokenize(lyrics.lower()))  # Tokenize and convert to lower case
+    english_words = words_in_lyrics.intersection(english_vocab)
+    
+    if len(words_in_lyrics) == 0:  # Prevent division by zero
+        return False
 
 def create_genre_df(genres: List[str], sample: int, spotifydf: pd.DataFrame):
     frames = []
